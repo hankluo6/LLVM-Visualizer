@@ -86,7 +86,11 @@ struct GraphAnalysis : PassInfoMixin<GraphAnalysis> {
             for (auto *Pred : Entry.second) {
                 Preds.push_back(::blockName(Pred));
             }
-            json::Object cfgNode = json::Object{{"name", ::blockName(Entry.first)}, {"edge", std::move(Preds)}, {"label", block_labels[Entry.first]}};
+            json::Array domator_frontier;
+            for (auto *Pred : df[Entry.first]) {
+                domator_frontier.push_back(::blockName(Pred));
+            }
+            json::Object cfgNode = json::Object{{"name", ::blockName(Entry.first)}, {"edge", std::move(Preds)}, {"label", block_labels[Entry.first]}, {"domainator_frontier", std::move(domator_frontier)}};
             Objects.push_back(std::move(cfgNode));
         }
         cfgResult["cfg"] = std::move(Objects);
