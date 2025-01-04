@@ -148,6 +148,11 @@ function renderGraph(containerId, graphData) {
     }
 
     function hightlight(node, currentContainerId) {
+        if (node.style('background-color') == '#f00') {
+            node.style('background-color', '#000');
+            unhighlightLLVMIR();
+            return;
+        }
         node.style('background-color', '#f00');
         hightlightLLVMIR(node.data('label'));
         cy.nodes().forEach(function (ele) {
@@ -164,6 +169,13 @@ function renderGraph(containerId, graphData) {
                 ele.style('background-color', '#000');
             });
         }
+    }
+
+    function unhighlightLLVMIR() {
+        const llvmContent = document.getElementById('llvm-content');
+        const lines = llvmContent.textContent.split('\n');
+        const highlightedContent = lines.map(line => line);
+        llvmContent.innerHTML = highlightedContent.join('\n');
     }
 
     function hightlightLLVMIR(label) {
