@@ -28,5 +28,16 @@ LLVM Visualizer is a web-based tool for analyzing and visualizing the LLVM Inter
 
 4. Open the web browser and navigate to `http://localhost:5000`.
 
+## How It Works
+1. The user inputs C/C++ code into the web interface.
+2. The Flask backend:
+   * Processes the input using LLVM's clang and opt tools to generate LLVM IR.
+   * Runs custom LLVM passes to compute the Dominator Frontier and CFG.
+   * Sends the IR and graph data (in JSON format) to the frontend.
+3. The frontend:
+   * Displays the LLVM IR in a styled text area.
+   * Uses Cytoscape.js to render the CFG and Dominator Frontier as interactive graphs.
+   * Highlights corresponding LLVM IR when graph nodes are clicked.
+
 ## License
 This project is licensed under the MIT License.
