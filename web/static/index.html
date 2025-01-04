@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLVM CFG and Dominator Tree Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/2.3.15/cytoscape.js"></script>
+    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.js"></script>
+    <script src="https://unpkg.com/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 50%;
+            margin: 0 auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #project-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        #input-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+
+        #input-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        #input-code {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-size: 14px;
+            font-family: monospace;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #buttons {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        #buttons button {
+            padding: 10px 20px;
+            font-size: 14px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #buttons button:hover {
+            background-color: #0056b3;
+        }
+        #main-container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            width: 33%;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 13px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 5px;
+            color: #007BFF;
+        }
+        #llvm-code {
+            width: 80%;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+            background-color: #f8f8f8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #ddd;
+            border-radius: 13px;
+        }
+
+        #llvm-code pre {
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            height: 590px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #graph-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            gap: 20px;
+        }
+        .graph-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .graph-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        #cfg, #dominator {
+            width: 80%;
+            height: 800px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 13px;
+        }
+        #separator {
+            width: 100%;
+            border: 0;
+            border-top: 2px solid #ccc;
+            margin: 20px auto;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1 id="project-title">LLVM Visualizer</h1>
+        <div id="input-container">
+            <textarea id="input-code" placeholder="Enter your C/C++ code here..."></textarea>
+        </div>
+        <div id="buttons">
+            <button onclick="submitCode()">Submit Code</button>
+        </div>
+    </div>
+    <hr id="separator">
+    <div id="main-container">
+        <!-- LLVM Code Section -->
+        <div class="section">
+            <div class="section-title">LLVM IR</div>
+            <div id="llvm-code">
+                <pre id="llvm-content">
+                </pre>
+            </div>
+        </div>
+        <!-- CFG Section -->
+        <div class="section">
+            <div class="section-title">CFG</div>
+            <div id="cfg" class="graph-container"></div>
+        </div>
+        <!-- Dominator Tree Section -->
+        <div class="section">
+            <div class="section-title">Dominator Tree</div>
+            <div id="dominator" class="graph-container"></div>
+        </div>
+    </div>
+    <script src="./static/frontend.js"></script>
+</body>
+</html>
