@@ -81,33 +81,24 @@ struct GraphAnalysis : PassInfoMixin<GraphAnalysis> {
         json::Object cfgResult;
         json::Array DominatorTree;
         json::Array Objects;
-        for (auto &Entry : cfg) {
-            json::Array Preds;
-            for (auto *Pred : Entry.second) {
-                Preds.push_back(::blockName(Pred));
+        for (BasicBlock &BB : F) {
+            json::Array PredsCFG;
+            json::Array PredsDT;
+            json::Array PredsDF;
+            std::string blockName = ::blockName(&BB);
+            for (auto *Pred : cfg[&BB]) {
+                PredsCFG.push_back(::blockName(Pred));
             }
-            json::Array domator_frontier;
-            for (auto *Pred : df[Entry.first]) {
-                domator_frontier.push_back(::blockName(Pred));
+            for (auto *Pred : dt[&BB]) {
+                PredsDT.push_back(::blockName(Pred));
             }
-            json::Object cfgNode = json::Object{{"name", ::blockName(Entry.first)}, {"edge", std::move(Preds)}, {"label", block_labels[Entry.first]}, {"dominator_frontier", std::move(domator_frontier)}};
+            for (auto *Pred : df[&BB]) {
+                PredsDF.push_back(::blockName(Pred));
+            }
+            json::Object cfgNode = json::Object{{"name", blockName}, {"edge_cfg", std::move(PredsCFG)}, {"edge_dt", std::move(PredsDT)}, {"dominator_frontier", std::move(PredsDF)}, {"label", block_labels[&BB]}};
             Objects.push_back(std::move(cfgNode));
         }
         cfgResult["cfg"] = std::move(Objects);
-
-        for (auto &Entry : dt) {
-            json::Array Preds;
-            for (auto *Pred : Entry.second) {
-                Preds.push_back(::blockName(Pred));
-            }
-            json::Array domator_frontier;
-            for (auto *Pred : df[Entry.first]) {
-                domator_frontier.push_back(::blockName(Pred));
-            }
-            json::Object cfgNode = json::Object{{"name", ::blockName(Entry.first)}, {"edge", std::move(Preds)}, {"dominator_frontier", std::move(domator_frontier)}, {"label", block_labels[Entry.first]}};
-            DominatorTree.push_back(std::move(cfgNode));
-        }
-        cfgResult["dominator_tree"] = std::move(DominatorTree);
 
         std::error_code EC;
         raw_fd_ostream File("output/cfg.json", EC);

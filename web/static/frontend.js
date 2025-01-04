@@ -14,9 +14,9 @@ function submitCode() {
         .then(response => response.json())
         .then(data => {
             load_llvm();
-            if (data.cfg && data.dominator_tree) {
+            if (data.cfg) {
                 renderGraph("cfg", data.cfg);
-                renderGraph("dominator", data.dominator_tree);
+                renderGraph("dominator", data.cfg);
             } else {
                 alert("Error: Invalid response from server!");
             }
@@ -54,8 +54,8 @@ function renderGraph(containerId, graphData) {
         nodes.push({
             data: { id: node.name, label: node.label, dominator_frontier: node.dominator_frontier }
         });
-
-        node.edge.forEach(target => {
+        const edgesData = containerId === 'cfg' ? node.edge_cfg : node.edge_dt;
+        edgesData.forEach(target => {
             edges.push({
                 data: { source: node.name, target }
             });
