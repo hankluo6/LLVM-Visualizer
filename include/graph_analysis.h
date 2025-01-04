@@ -1,11 +1,9 @@
 #include "llvm/Transforms/Utils/AssumeBundleBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Local.h"
-#include "llvm/IR/InstIterator.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/Pass.h"
 #include "llvm/Analysis/PostDominators.h"
-#include "llvm/Support/FormatVariadic.h"
 #include "llvm/Support/JSON.h"
 
 #include <unordered_set>
@@ -33,9 +31,11 @@ std::string instructionToString(const llvm::Instruction &I) {
 struct GraphAnalysis : PassInfoMixin<GraphAnalysis> {
     PreservedAnalyses run(Function &F, FunctionAnalysisManager &FAM) {
         auto &DT = FAM.getResult<DominatorTreeAnalysis>(F);
+        auto &PDT = FAM.getResult<PostDominatorTreeAnalysis>(F);
 
         std::unordered_map<BasicBlock *, std::unordered_set<BasicBlock *>> dt;
         std::unordered_map<BasicBlock *, std::unordered_set<BasicBlock *>> df;
+        std::unordered_map<BasicBlock *, std::unordered_set<BasicBlock *>> postDF;
         std::unordered_map<BasicBlock *, std::unordered_set<BasicBlock *>> cfg;
         std::unordered_map<BasicBlock *, std::string> block_labels;
 
@@ -70,6 +70,18 @@ struct GraphAnalysis : PassInfoMixin<GraphAnalysis> {
         }
 
         for (BasicBlock &BB : F) {
+            if (succ_size(&BB) < 2)
+                continue;
+            for (BasicBlock *Succ : successors(&BB)) {
+                BasicBlock *Runner = Succ;
+                while (Runner && Runner != PDT.getNode(&BB)->getIDom()->getBlock()) {
+                    postDF[Runner].insert(&BB);
+                    Runner = PDT.getNode(Runner)->getIDom()->getBlock();
+                }
+            }
+        }
+
+        for (BasicBlock &BB : F) {
             std::string block_label;
             for (Instruction &I : BB) {
                 block_label += instructionToString(I);
@@ -85,6 +97,7 @@ struct GraphAnalysis : PassInfoMixin<GraphAnalysis> {
             json::Array PredsCFG;
             json::Array PredsDT;
             json::Array PredsDF;
+            json::Array PredsPostDF;
             std::string blockName = ::blockName(&BB);
             for (auto *Pred : cfg[&BB]) {
                 PredsCFG.push_back(::blockName(Pred));
@@ -95,7 +108,10 @@ struct GraphAnalysis : PassInfoMixin<GraphAnalysis> {
             for (auto *Pred : df[&BB]) {
                 PredsDF.push_back(::blockName(Pred));
             }
-            json::Object cfgNode = json::Object{{"name", blockName}, {"edge_cfg", std::move(PredsCFG)}, {"edge_dt", std::move(PredsDT)}, {"dominator_frontier", std::move(PredsDF)}, {"label", block_labels[&BB]}};
+            for (auto *Pred : postDF[&BB]) {
+                PredsPostDF.push_back(::blockName(Pred));
+            }
+            json::Object cfgNode = json::Object{{"name", blockName}, {"edge_cfg", std::move(PredsCFG)}, {"edge_dt", std::move(PredsDT)}, {"dominator_frontier", std::move(PredsDF)}, {"post_dominator_frontier", std::move(PredsPostDF)}, {"label", block_labels[&BB]}};
             Objects.push_back(std::move(cfgNode));
         }
         cfgResult["cfg"] = std::move(Objects);

@@ -52,7 +52,7 @@ function renderGraph(containerId, graphData) {
     const edges = [];
     graphData.forEach(node => {
         nodes.push({
-            data: { id: node.name, label: node.label, dominator_frontier: node.dominator_frontier }
+            data: { id: node.name, label: node.label, dominator_frontier: node.dominator_frontier, post_dominator_frontier: node.post_dominator_frontier }
         });
         const edgesData = containerId === 'cfg' ? node.edge_cfg : node.edge_dt;
         edgesData.forEach(target => {
@@ -156,9 +156,12 @@ function renderGraph(containerId, graphData) {
         node.style('background-color', '#f00');
         hightlightLLVMIR(node.data('label'));
         var df = node.data('dominator_frontier');
+        var pdf = node.data('post_dominator_frontier');
         cy.nodes().forEach(function (ele) {
             if (df.includes(ele.data('id'))) {
                 ele.style('background-color', '#ffeb3b');
+            } else if (pdf.includes(ele.data('id'))) {
+                ele.style('background-color', '#2196f3');
             } else if (ele != node) {
                 ele.style('background-color', '#000');
             }

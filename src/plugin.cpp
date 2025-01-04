@@ -15,6 +15,7 @@ extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo llvmGetPassPluginInfo() {
                 [](FunctionAnalysisManager &FAM) {
                     FAM.registerPass([&] { return LoopAnalysis(); });
                     FAM.registerPass([&] { return DominatorTreeAnalysis(); });
+                    FAM.registerPass([&] { return PostDominatorTreeAnalysis(); });
                 });
             PB.registerPipelineParsingCallback(
                 [](StringRef Name, FunctionPassManager &FPM,
