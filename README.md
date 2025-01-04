@@ -4,9 +4,9 @@ LLVM Visualizer is a web-based tool for analyzing and visualizing the LLVM Inter
 
 ## Requirements
 
-- Python 3
+- Python3
 - Flask
-- LLVM
+- LLVM 19.1
 
 ## Usage
 
@@ -40,4 +40,4 @@ LLVM Visualizer is a web-based tool for analyzing and visualizing the LLVM Inter
    * Highlights corresponding LLVM IR when graph nodes are clicked.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
