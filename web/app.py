@@ -19,7 +19,6 @@ def index():
 def submit_code():
     data = request.json
     code = data.get('code', '')
-
     if not code.strip():
         return jsonify({"error": "No code provided"}), 400
 
@@ -32,7 +31,7 @@ def submit_code():
     subprocess.run(compile_cmd, check=True)
 
     json_file = os.path.join(OUTPUT_DIR, "cfg.json")
-    opt_cmd = [OPT_PATH, "-S", "-load-pass-plugin=../build/libllvm_graph_analysis.dylib", "-passes=function(graph-analysis)", ir_file, "-o", ir_file]
+    opt_cmd = [OPT_PATH, "-S", "-load-pass-plugin=./build/libllvm_graph_analysis.so", "-passes=function(graph-analysis)", ir_file, "-o", ir_file]
     subprocess.run(opt_cmd, check=True)
 
     with open(json_file, "r") as f:
@@ -49,4 +48,4 @@ def get_llvm_ir():
         return jsonify({"error": str(e)}), 500
     
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=5000)
+	app.run(host='0.0.0.0', port=8000)

@@ -2,6 +2,8 @@
 
 LLVM Visualizer is a web-based tool for analyzing and visualizing the LLVM Intermediate Representation (IR), Control Flow Graph (CFG), and Dominator Frontier of a user-provided program. The tool allows users to upload their code, process it using LLVM, and interactively explore the generated IR and visual representations of CFG and Dominator Frontier.
 
+[Live Demo](https://llvm-visualizer-awehczdag8agaea3.centralus-01.azurewebsites.net/)
+
 ## Requirements
 
 - Python3
